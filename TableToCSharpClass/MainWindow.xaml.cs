@@ -78,7 +78,7 @@ namespace AdvExample1
         {
             LogMessage("Press the button again to stop creating files.");
 
-            using (SqlConnection destinationConnection = new SqlConnection(myConnectionString))
+            using (var destinationConnection = new SqlConnection(myConnectionString))
             {
                 destinationConnection.Open();
                 var newHelper = new DatabaseTableHelper(destinationConnection);
