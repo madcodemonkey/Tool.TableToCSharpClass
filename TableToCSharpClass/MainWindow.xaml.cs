@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.SqlClient;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -82,26 +83,34 @@ namespace AdvExample1
             {
                 destinationConnection.Open();
                 var newHelper = new DatabaseTableHelper(destinationConnection);
-                foreach (DatabaseTable table in newHelper.LoadTableNames())
+                foreach (DatabaseTable table in newHelper.LoadTableNames().OrderBy(o => o.TableName))
                 {
                     if (_DbTablesToFilesCancelToken.IsCancellationRequested)
                     {
                         break;
                     }
 
-                    // Load table fields
-                    var tableNameWithSchema = table.ToString();
-                    var tableFields = newHelper.LoadFields(tableNameWithSchema);
-
-                    // Create class in memory
-                    string someClass = newHelper.ConvertFieldsToClass(tableFields, table.TableName, namespaceName);
-
-                    // Save class to file system
-                    string fileName = Path.Combine(directoryName, $"{table.TableName}.cs");
-                    using (FileStream fs = File.Create(fileName))
-                    using (StreamWriter sw = new StreamWriter(fs))
+                    try
                     {
-                        sw.WriteLine(someClass);
+                        LogMessage($"Table: {table.Schema}.{table.TableName}");
+                        // Load table fields
+                        var tableNameWithSchema = table.ToString();
+                        var tableFields = newHelper.LoadFields(tableNameWithSchema);
+
+                        // Create class in memory
+                        string someClass = newHelper.ConvertFieldsToClass(tableFields, table.TableName, namespaceName);
+
+                        // Save class to file system
+                        string fileName = Path.Combine(directoryName, $"{table.TableName}.cs");
+                        using (FileStream fs = File.Create(fileName))
+                        using (StreamWriter sw = new StreamWriter(fs))
+                        {
+                            sw.WriteLine(someClass);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                          LogError(ex);
                     }
                 }
             }
