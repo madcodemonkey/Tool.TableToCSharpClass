@@ -26,15 +26,42 @@ namespace AdvExample1
             return someType.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
 
-        /// <summary>Somes a type in a friendly string.  Normally, you can use just the name property on 
+        /// <summary>Converts a type in a friendly string.  Normally, you can use just the name property on 
         /// the Type class, but with nullables you have to look at the underlying type as well.</summary>
         /// <param name="someType">Type to show as a string</param>
         public static string HelpTypeToString(this Type someType)
         {
-            if (someType.HelpIsNullable() == false)
-                return someType.Name;
+            bool helpIsNullable = someType.HelpIsNullable();
+            string result = helpIsNullable ? Nullable.GetUnderlyingType(someType).Name : someType.Name;
 
-            return $"{Nullable.GetUnderlyingType(someType).Name}?";
+            result = ConvertToCommonType(result);
+
+
+            return helpIsNullable ? $"{result}?" : result;
+        }
+
+        /// <summary>Converts the formal type names to informal/common type names.</summary>
+        /// <param name="someType"></param>
+        /// <returns></returns>
+        private static string ConvertToCommonType(string someType)
+        {
+            switch (someType)
+            {
+                case "Boolean":
+                    return "bool";
+                case "Byte":
+                    return "byte";
+                case "Int16":
+                    return "short";
+                case "Int32":
+                    return "int";
+                case "Int64":
+                    return "long";
+                case "String":
+                    return "string";
+                default:
+                    return someType;
+            }
         }
     }
 }
